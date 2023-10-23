@@ -23,7 +23,7 @@
   https://www.arduino.cc/en/Tutorial/BuiltInExamples/Blink
 */
 
-// Jacob Kerstetter
+// Jacob Kerstetter - 10/23
 
 //Joe Maciolek
 // the setup function runs once when you press reset or power the board
