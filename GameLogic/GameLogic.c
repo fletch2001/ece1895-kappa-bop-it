@@ -11,7 +11,7 @@ int main() {
     srand(time(NULL));
 
     // initialize input time and score
-    int inputTime = 2;
+    float inputTime = 2;
     int score = 0;
 
     // loop for the game
@@ -31,9 +31,10 @@ int main() {
                 Sleep(inputTime*1000);
 
                 // adjust inputTime to be faster for next instruction
-                inputTime -= 0.02;
+                inputTime *= 0.95;
                 score++;
             }
+
             // pour it
             else if (command == PourIt) {
                 printf("Pour It!\n");
@@ -42,7 +43,7 @@ int main() {
                 Sleep(inputTime*1000);
 
                 // adjust inputTime to be faster for next instruction
-                inputTime -= 0.02;
+                inputTime *= 0.95;
                 score++;
             }
 
@@ -54,7 +55,7 @@ int main() {
                 Sleep(inputTime*1000);
 
                 // adjust inputTime to be faster for next instruction
-                inputTime -= 0.02;
+                inputTime *= 0.95;
                 score++;
             }
         }
