@@ -26,9 +26,9 @@ void setup() {
 }
 
 void wait_for_user_response(uint8_t input_pin, uint8_t signal_to_wait_for, uint8_t output_pin) {
-  while(!(digitalRead(input_pin) == signal_to_wait_for)) {
-    digitalWrite(output_pin, HIGH);
-  }
+  digitalWrite(output_pin, HIGH);
+  while((digitalRead(input_pin) != signal_to_wait_for));
+  while(digitalRead(input_pin) == signal_to_wait_for); // wait for signal to reset
 
   digitalWrite(output_pin, LOW);
 
@@ -38,7 +38,7 @@ void loop() {
 
   // keep increasing the rand seed counter until start is pressed. This will add a randomness effect
   // because we don't have an RTC to keep track of time.
-  while(digitalRead(START_BUTTON) == 0) {
+  while(digitalRead(START_BUTTON) == HIGH) {
     rand_seed_counter++;
   }
 
@@ -61,7 +61,7 @@ void loop() {
             // twist it
             if (command == TwistIt) {
                 //printf("Twist It!\n");
-                wait_for_user_response(START_BUTTON, HIGH, LED1);
+                wait_for_user_response(START_BUTTON, LOW, LED1);
 
                 // poll for user input
                 delay(inputTime*1000);
@@ -73,7 +73,7 @@ void loop() {
             // pour it
             else if (command == PourIt) {
                 //printf("Pour It!\n");
-                wait_for_user_response(START_BUTTON, HIGH, LED2);
+                wait_for_user_response(START_BUTTON, LOW, LED2);
 
                 // poll for user input
                 delay(inputTime*1000);
@@ -86,7 +86,7 @@ void loop() {
             // rip it
             else if (command == RipIt) {
                 //printf("Rip It!\n");
-                wait_for_user_response(START_BUTTON, HIGH, LED3);
+                wait_for_user_response(START_BUTTON, LOW, LED3);
 
                 // poll for user input
                 delay(inputTime*1000);
