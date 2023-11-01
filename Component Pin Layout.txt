@@ -1,0 +1,36 @@
+Twist It (rot pot)
+- Vcc
+- GND
+- Analog Input (pin 26)
+
+Pour It (IMU)
+- Vcc
+- GND
+- Pin 28 (CLK)
+- Pin 27
+
+Rip It (slide pot)
+- Vcc
+- GND
+- Analog Input (pin 25)
+
+Screen
+- Vcc
+- GND
+- Pin 28 (CLK)
+- Pin 27
+
+SD Adapter
+- Vcc
+- GND
+- Pin 19 (CLK)
+- Pin 16 (CS)
+- Pin 17 (MOSI)
+- Pin 18 (MISO)
+
+Speaker
+- GND
+- Pin 14
+
+Start Button
+- Pin 11
