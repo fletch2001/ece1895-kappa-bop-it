@@ -1,5 +1,8 @@
 #include <time.h>
 
+#include 
+
+
 #define START_BUTTON 4
 #define LED1 6
 #define LED2 7
@@ -46,7 +49,7 @@ void loop() {
     srand(rand_seed_counter);
 
     // initialize input time and score
-    int inputTime = 2;
+    float inputTime = 2;
     int score = 0;
 
     // loop for the game
