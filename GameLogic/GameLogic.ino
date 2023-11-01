@@ -4,6 +4,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+#include 
+
+
 #define START_BUTTON 4
 #define LED1 6
 #define LED2 7
@@ -98,6 +101,9 @@ void loop() {
   else { // game is running
       while (true) {
         int command = rand() % 3;
+    // initialize input time and score
+    float inputTime = 2;
+    int score = 0;
 
         // twist it
         if (command == TwistIt) {
