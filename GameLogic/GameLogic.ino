@@ -87,17 +87,6 @@ void wait_for_user_response(uint8_t input_pin, uint8_t signal_to_wait_for, uint8
   while(digitalRead(input_pin) == signal_to_wait_for); // wait for signal to reset
 }
 
-/*
-void play_test_sound() {
-  // based on: https://www.instructables.com/Audio-Player-Using-Arduino-With-Micro-SD-Card/
-  sdCard = SD.open("test_sound.wav", FILE_READ);
-
-  if (sdCard) {
-    while (sdCard.available())
-  }
-}
-*/
-
 void loop() {
 
   // keep increasing the rand seed counter until start is pressed. This will add a randomness effect
