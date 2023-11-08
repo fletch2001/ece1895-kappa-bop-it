@@ -1,0 +1,6 @@
+Added Pin To Net: NetName=NetATMega_15 Pin=Speaker-1
+Added Member To Class: ClassName=Bop_it Schematic Member=Component Input Power 61300211121
+Added Member To Class: ClassName=Bop_it Schematic Member=Component Programmer TSW-103-08-G-D
+Added Member To Class: ClassName=Bop_it Schematic Member=Component Push Button RESET
+Added Member To Class: ClassName=Bop_it Schematic Member=Component Speaker 61300211121
+Added Member To Class: ClassName=Bop_it Schematic Member=Component Start Button 61300211121
