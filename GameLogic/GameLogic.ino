@@ -169,9 +169,6 @@ void loop() {
   } else { // game is running
       while (true) {
         int command = rand() % 3;
-    // initialize input time and score
-    float inputTime = 2;
-    int score = 0;
 
         // twist it
         if (command == TwistIt) {
@@ -187,8 +184,6 @@ void loop() {
         // pour it
         else if (command == PourIt) {
             //printf("Pour It!\n");
-
-
 
             wait_for_user_response(POUR_IT);
 
