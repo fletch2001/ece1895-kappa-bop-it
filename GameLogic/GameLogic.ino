@@ -13,9 +13,9 @@
 
 #define TEST_BUTTON 15
 
-#define TWIST_IT 1
-#define RIP_IT 2
-#define POUR_IT 4
+#define TWIST_IT 0
+#define RIP_IT 1
+#define POUR_IT 2
 
 #define WIDTH 128
 #define HEIGHT 64
@@ -24,10 +24,13 @@
 
 String commands_list[] = {"Twist it!", "Rip it!", "Pour it!"};
 
+
+
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
 MPU6050 accelgyro; // IMU object
 
-enum commands {TwistIt, PourIt, RipIt};
+enum commands {TwistIt, RipIt, PourIt};
+int current_command;
 
 // initialize input time and score
 float inputTime = 2;
@@ -37,7 +40,6 @@ int rand_seed_counter;
 
 
 int16_t ax, ay, az;
-int16_t prev_ax, prev_ay, prev_az;
 
 void setup() {
   // set up serial output to test code
@@ -78,6 +80,19 @@ void display_command_and_score_to_oled(String command) {
   display.display();
 }
 
+void display_score_to_oled() {
+  display.setCursor(0, 0);
+  display.setTextSize(1);
+  display.print("score: " + String(score));
+}
+
+void display_command_to_oled() {
+  // second line
+  display.setCursor(0, 10);
+  display.setTextSize(2);
+  display.print(commands_list[current_command]);
+}
+
 // the 1,2,4 method - no combination of them equals another and then we can distinguish between outputs passed back.
 int poll_twist_it() {
   if(digitalRead(TEST_BUTTON) == 0) return 1;
@@ -108,8 +123,12 @@ int poll_sensors() {
 }
 
 void wait_for_user_response(int command) {  
+  current_command = command;
   
-  display_command_and_score_to_oled(commands_list[command >> 1]);
+  //display_command_and_score_to_oled(commands_list[command]);
+  display.clearDisplay();
+  display_command_to_oled();
+  display_score_to_oled();
 
   // accelgyro.getAcceleration(&prev_ax, &prev_ay, &prev_az);
 
@@ -127,18 +146,29 @@ void wait_for_user_response(int command) {
     if ((timeAction - timeStart) > inputTime*1000) {
       display.clearDisplay();
       display.println("score = " + String(score));
+      display.setTextSize(2);
       display.println("GAME OVER!");
       display.display();
-      exit(0);
+      //exit(0);
+      // hang here
+      while(1);
     }
     sensor_sum = poll_sensors();
   }
-  if(sensor_sum != command) {
+
+  // left shift command for 1-2-4 mapping
+  if(sensor_sum != (command << 1)) {
     display.clearDisplay();
       display.println("score = " + String(score));
+      display.setTextSize(2);
       display.println("GAME OVER!");
       display.display();
-      exit(0);
+      //exit(0);
+      while(1);
+  } else {
+    score++;
+    inputTime -= 0.02;
+    display_score_to_oled();
   }
   
 }
@@ -178,8 +208,8 @@ void loop() {
             delay(1000);
 
             // adjust inputTime to be faster for next instruction
-            inputTime -= 0.02;
-            score++;
+            // inputTime -= 0.02;
+            // score++;
         }
         // pour it
         else if (command == PourIt) {
@@ -191,8 +221,8 @@ void loop() {
             delay(1000);
 
             // adjust inputTime to be faster for next instruction
-            inputTime -= 0.02;
-            score++;
+            // inputTime -= 0.02;
+            // score++;
         }
 
         // rip it
@@ -204,8 +234,8 @@ void loop() {
             delay(1000);
 
             // adjust inputTime to be faster for next instruction
-            inputTime -= 0.02;
-            score++;
+            // inputTime -= 0.02;
+            // score++;
         }
       }
   }
