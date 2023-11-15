@@ -6,16 +6,16 @@
 #include "MPU6050.h"
 
 
-#define START_BUTTON 4
+#define START_BUTTON 5
 #define LED1 6
 #define LED2 7
 #define LED3 8
 
 #define TEST_BUTTON 15
 
-#define TWIST_IT 1
-#define RIP_IT 2
-#define POUR_IT 4
+#define TWIST_IT 0
+#define RIP_IT 1
+#define POUR_IT 2
 
 #define WIDTH 128
 #define HEIGHT 64
@@ -24,10 +24,13 @@
 
 String commands_list[] = {"Twist it!", "Rip it!", "Pour it!"};
 
+
+
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
 MPU6050 accelgyro; // IMU object
 
-enum commands {TwistIt, PourIt, RipIt};
+enum commands {TwistIt, RipIt, PourIt};
+int current_command;
 
 // initialize input time and score
 float inputTime = 2;
@@ -37,7 +40,6 @@ int rand_seed_counter;
 
 
 int16_t ax, ay, az;
-int16_t prev_ax, prev_ay, prev_az;
 
 void setup() {
   // set up serial output to test code
@@ -69,13 +71,26 @@ void setup() {
 
 }
 
+void display_score_to_oled() {
+  display.setCursor(0, 0);
+  display.setTextSize(1);
+  display.print("score: " + String(score));
+  display.display();
+}
+
+void display_command_to_oled() {
+  // second line
+  display.setCursor(0, 10);
+  display.setTextSize(2);
+  display.print(commands_list[current_command]);
+  display.display();
+}
+
 void display_command_and_score_to_oled(String command) {
   // write command to OLED
   display.clearDisplay();
-  display.setCursor(10, 10);
-  display.println("score = " + String(score));
-  display.println(command);
-  display.display();
+  display_score_to_oled();
+  display_command_to_oled();
 }
 
 // the 1,2,4 method - no combination of them equals another and then we can distinguish between outputs passed back.
@@ -91,25 +106,28 @@ int poll_rip_it() {
 
 int poll_pour_it() {
   accelgyro.getAcceleration(&ax, &ay, &az);
-
+    return 4;
     // check not upright
-    if(az < ax && az < ay) {
-      display.setCursor(0, 100);
-      display.println("not upright");
-      display.display();
-      return 4;
-    } else {
-      return 0;
-    }
+    // if(az < ax && az < ay) {
+    //   display.setCursor(0, 100);
+    //   display.println("not upright");
+    //   display.display();
+    //   return 4;
+    // } else {
+    //   return 0;
+    // }
 }
 
 int poll_sensors() {
-  return poll_pour_it() + poll_rip_it() + poll_twist_it();
+  return poll_pour_it(); 
+  // + poll_rip_it() 
+  // + poll_twist_it();
 }
 
 void wait_for_user_response(int command) {  
+  current_command = command;
   
-  display_command_and_score_to_oled(commands_list[command >> 1]);
+  display_command_and_score_to_oled(commands_list[command]);
 
   // accelgyro.getAcceleration(&prev_ax, &prev_ay, &prev_az);
 
@@ -126,19 +144,34 @@ void wait_for_user_response(int command) {
     // if time elapsed is longer than current input time allowed, game over!
     if ((timeAction - timeStart) > inputTime*1000) {
       display.clearDisplay();
-      display.println("score = " + String(score));
-      display.println("GAME OVER!");
+      display.setCursor(0, 0);
+      display.setTextSize(1);
+      display.print("score = " + String(score) + "\n");
+      display.setCursor(0, 10);
+      display.setTextSize(2);
+      display.print("GAME OVER!");
       display.display();
-      exit(0);
+      // hang here
+      while(1);
     }
     sensor_sum = poll_sensors();
   }
-  if(sensor_sum != command) {
+
+  // left shift command for 1-2-4 mapping
+  if(sensor_sum != (command << 1)) {
     display.clearDisplay();
-      display.println("score = " + String(score));
-      display.println("GAME OVER!");
+      display.setCursor(0, 0);
+      display.setTextSize(1);
+      display.print("score = " + String(score) + "\n");
+      display.setCursor(0, 10);
+      display.setTextSize(2);
+      display.print("GAME OVER!");
       display.display();
-      exit(0);
+      while(1);
+  } else {
+    score++;
+    inputTime -= 0.02;
+    display_score_to_oled();
   }
   
 }
@@ -147,13 +180,20 @@ void loop() {
 
   // keep increasing the rand seed counter until start is pressed. This will add a randomness effect
   // because we don't have an RTC to keep track of time.
-  while(digitalRead(START_BUTTON) == HIGH) {
-    display.setCursor(0, 10);
+  while(digitalRead(START_BUTTON) == LOW) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
     display.print("waiting...");
     display.display();
     display.clearDisplay();
     rand_seed_counter++;
   }
+  
+  display.print("Game starting!");
+      display.display();
+
+  // wait for button to be let-go of
+  while(digitalRead(START_BUTTON) == HIGH);
 
   display.clearDisplay();
 
@@ -167,19 +207,20 @@ void loop() {
       display.print("game is not running");
       display.display();
   } else { // game is running
+      
       while (true) {
-        int command = rand() % 3;
-
+        //int command = rand() % 3;
+        int command = POUR_IT;
         // twist it
         if (command == TwistIt) {
             wait_for_user_response(TWIST_IT);
 
             // poll for user input
-            delay(1000);
+            delay(1500);
 
             // adjust inputTime to be faster for next instruction
-            inputTime -= 0.02;
-            score++;
+            // inputTime -= 0.02;
+            // score++;
         }
         // pour it
         else if (command == PourIt) {
@@ -188,11 +229,11 @@ void loop() {
             wait_for_user_response(POUR_IT);
 
             // poll for user input
-            delay(1000);
+            delay(1500);
 
             // adjust inputTime to be faster for next instruction
-            inputTime -= 0.02;
-            score++;
+            // inputTime -= 0.02;
+            // score++;
         }
 
         // rip it
@@ -201,11 +242,11 @@ void loop() {
             wait_for_user_response(RIP_IT);
 
             // poll for user input
-            delay(1000);
+            delay(1500);
 
             // adjust inputTime to be faster for next instruction
-            inputTime -= 0.02;
-            score++;
+            // inputTime -= 0.02;
+            // score++;
         }
       }
   }
