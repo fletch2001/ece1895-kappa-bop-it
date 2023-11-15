@@ -6,7 +6,7 @@
 #include "MPU6050.h"
 
 
-#define START_BUTTON 4
+#define START_BUTTON 5
 #define LED1 6
 #define LED2 7
 #define LED3 8
@@ -71,19 +71,10 @@ void setup() {
 
 }
 
-void display_command_and_score_to_oled(String command) {
-  // write command to OLED
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.print("score = " + String(score));
-  display.print(command);
-  display.display();
-}
-
 void display_score_to_oled() {
   display.setCursor(0, 0);
   display.setTextSize(1);
-  display.print("score: " + String(score) + "\n");
+  display.print("score: " + String(score));
   display.display();
 }
 
@@ -91,8 +82,15 @@ void display_command_to_oled() {
   // second line
   display.setCursor(0, 10);
   display.setTextSize(2);
-  display.print(commands_list[current_command] + "\n");
+  display.print(commands_list[current_command]);
   display.display();
+}
+
+void display_command_and_score_to_oled(String command) {
+  // write command to OLED
+  display.clearDisplay();
+  display_score_to_oled();
+  display_command_to_oled();
 }
 
 // the 1,2,4 method - no combination of them equals another and then we can distinguish between outputs passed back.
@@ -108,29 +106,28 @@ int poll_rip_it() {
 
 int poll_pour_it() {
   accelgyro.getAcceleration(&ax, &ay, &az);
-
+    return 4;
     // check not upright
-    if(az < ax && az < ay) {
-      display.setCursor(0, 100);
-      display.println("not upright");
-      display.display();
-      return 4;
-    } else {
-      return 0;
-    }
+    // if(az < ax && az < ay) {
+    //   display.setCursor(0, 100);
+    //   display.println("not upright");
+    //   display.display();
+    //   return 4;
+    // } else {
+    //   return 0;
+    // }
 }
 
 int poll_sensors() {
-  return poll_pour_it() + poll_rip_it() + poll_twist_it();
+  return poll_pour_it(); 
+  // + poll_rip_it() 
+  // + poll_twist_it();
 }
 
 void wait_for_user_response(int command) {  
   current_command = command;
   
-  //display_command_and_score_to_oled(commands_list[command]);
-  display.clearDisplay();
-  display_score_to_oled();
-  display_command_to_oled();
+  display_command_and_score_to_oled(commands_list[command]);
 
   // accelgyro.getAcceleration(&prev_ax, &prev_ay, &prev_az);
 
@@ -154,7 +151,6 @@ void wait_for_user_response(int command) {
       display.setTextSize(2);
       display.print("GAME OVER!");
       display.display();
-      //exit(0);
       // hang here
       while(1);
     }
@@ -171,7 +167,6 @@ void wait_for_user_response(int command) {
       display.setTextSize(2);
       display.print("GAME OVER!");
       display.display();
-      //exit(0);
       while(1);
   } else {
     score++;
@@ -193,6 +188,9 @@ void loop() {
     display.clearDisplay();
     rand_seed_counter++;
   }
+  
+  display.print("Game starting!");
+      display.display();
 
   // wait for button to be let-go of
   while(digitalRead(START_BUTTON) == HIGH);
@@ -209,15 +207,16 @@ void loop() {
       display.print("game is not running");
       display.display();
   } else { // game is running
+      
       while (true) {
-        int command = rand() % 3;
-
+        //int command = rand() % 3;
+        int command = POUR_IT;
         // twist it
         if (command == TwistIt) {
             wait_for_user_response(TWIST_IT);
 
             // poll for user input
-            delay(1000);
+            delay(1500);
 
             // adjust inputTime to be faster for next instruction
             // inputTime -= 0.02;
@@ -230,7 +229,7 @@ void loop() {
             wait_for_user_response(POUR_IT);
 
             // poll for user input
-            delay(1000);
+            delay(1500);
 
             // adjust inputTime to be faster for next instruction
             // inputTime -= 0.02;
@@ -243,7 +242,7 @@ void loop() {
             wait_for_user_response(RIP_IT);
 
             // poll for user input
-            delay(1000);
+            delay(1500);
 
             // adjust inputTime to be faster for next instruction
             // inputTime -= 0.02;
