@@ -10,6 +10,8 @@
 #define LED1 6
 #define LED2 7
 #define LED3 8
+#define RIP_IT_SLIDE_POT 19
+#define TWIST_IT_ROT_POT 17
 
 #define TEST_BUTTON 15
 
@@ -25,6 +27,8 @@
 String commands_list[] = {"Twist it!", "Rip it!", "Pour it!"};
 
 
+int PREV_TWIST_IT;
+int PREV_RIP_IT;
 
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
 MPU6050 accelgyro; // IMU object
@@ -68,6 +72,8 @@ void setup() {
 
   accelgyro.initialize(); // init accelgyro
 
+  PREV_TWIST_IT = analogRead(TWIST_IT_ROT_POT);
+  PREV_RIP_IT = analogRead(RIP_IT_SLIDE_POT);
 
 }
 
@@ -95,12 +101,18 @@ void display_command_and_score_to_oled(String command) {
 
 // the 1,2,4 method - no combination of them equals another and then we can distinguish between outputs passed back.
 int poll_twist_it() {
-  if(digitalRead(TEST_BUTTON) == 0) return 1;
+  if(analogRead(TWIST_IT_ROT_POT) != PREV_TWIST_IT) {
+    PREV_TWIST_IT = analogRead(TWIST_IT_ROT_POT);
+    return 1;
+  }
   else return 0;
 }
 
 int poll_rip_it() {
-  if(digitalRead(TEST_BUTTON) == 0) return 2;
+  if(analogRead(RIP_IT_SLIDE_POT) != PREV_RIP_IT) {
+    PREV_RIP_IT = analogRead(RIP_IT_SLIDE_POT);
+    return 2;
+  }
   else return 0;
 }
 
@@ -108,20 +120,33 @@ int poll_pour_it() {
   accelgyro.getAcceleration(&ax, &ay, &az);
     return 4;
     // check not upright
-    // if(az < ax && az < ay) {
-    //   display.setCursor(0, 100);
-    //   display.println("not upright");
-    //   display.display();
-    //   return 4;
-    // } else {
-    //   return 0;
-    // }
+    
+#if UPRIGHT_DIRECTION == Z
+    if(az < ax && az < ay) {
+      // display.setCursor(0, 100);
+      // display.println("not upright");
+      // display.display();
+      return 4;
+#elif UPRIGHT_DIRECTION == X
+    if(ax < ay && ax < az) {
+      // display.setCursor(0, 100);
+      // display.println("not upright");
+      // display.display();
+      return 4;
+#elif UPRIGHT_DIRECTION == Y
+     if(ay < ax && ay < az) {
+      // display.setCursor(0, 100);
+      // display.println("not upright");
+      // display.display();
+      return 4;
+#endif
+    } else {
+      return 0;
+    }
 }
 
 int poll_sensors() {
-  return poll_pour_it(); 
-  // + poll_rip_it() 
-  // + poll_twist_it();
+  return poll_pour_it() + poll_rip_it() + poll_twist_it();
 }
 
 void wait_for_user_response(int command) {  
