@@ -1,10 +1,19 @@
 // includes for libraries used
 #include <time.h>
 #include <SPI.h>
+#include <SD.h>
+#include <TMRpcm.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "MPU6050.h"
+
+#define START_BUTTON 4
+#define LED1 6
+#define LED2 7
+#define LED3 8
+
+#define SD_CS 16
 
 // defines for pins for inputs
 #define START_BUTTON 5
@@ -39,10 +48,15 @@ Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
 MPU6050 accelgyro; 
 int16_t ax, ay, az;
 
+// initialize input time, score, and random seed
 // global vars for input time, score, and random seed
 float inputTime = 2;
 int score = 0;
 int rand_seed_counter;
+
+// initialize file for sd card
+File sdCard;
+TMRpcm tmrpcm;
 
 void setup() {
   rand_seed_counter = 0;
@@ -63,6 +77,15 @@ void setup() {
   // set default OLED writing settings
   display.setTextSize(1);
   display.setTextColor(WHITE);
+
+  // setup speaker
+  tmrpcm.speakerPin = 14;
+
+  if(!SD.begin(SD_CS))
+    return;
+  
+  tmrpcm.setVolume(6);
+  tmrpcm.play("test_sound.wav");
 }
 
 // function to write score to OLED display
