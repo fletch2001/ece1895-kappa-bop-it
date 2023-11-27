@@ -1,0 +1,19 @@
+Change Component Footprint: Designator=P-IN Old Footprint=61300211121 New Footprint=61300211121
+Change Component Footprint: Designator=P SW Old Footprint=61300211121 New Footprint=61300211121
+Change Component Footprint: Designator=Speaker Old Footprint=61300211121 New Footprint=61300211121
+Change Component Footprint: Designator=Start Btn Old Footprint=61300211121 New Footprint=61300211121
+Change Component Footprint: Designator=Input LED Old Footprint=FP-6_544-5255_01-4-MFG New Footprint=FP-6_544-5255_01-4-MFG
+Change Component Footprint: Designator=Vcc LED Old Footprint=FP-6_544-5255_01-4-MFG New Footprint=FP-6_544-5255_01-4-MFG
+Change Component Footprint: Designator=R1 Old Footprint=FP-MRS25-MFG New Footprint=FP-MRS25-MFG
+Change Component Footprint: Designator=R2 Old Footprint=FP-MRS25-MFG New Footprint=FP-MRS25-MFG
+Change Component Footprint: Designator=R Input Old Footprint=FP-MRS25-MFG New Footprint=FP-MRS25-MFG
+Change Component Footprint: Designator=R Vcc Old Footprint=FP-MRS25-MFG New Footprint=FP-MRS25-MFG
+Change Component Designator: OldDesignator=CO NewDesignator=Crystall Oscillator
+Change Component Designator: OldDesignator=P-IN NewDesignator=Input Power
+Change Component Designator: OldDesignator=Prog NewDesignator=Programmer
+Change Component Designator: OldDesignator=P SW NewDesignator=Power Switch
+Change Component Designator: OldDesignator=Push Btn NewDesignator=Push Button
+Change Component Designator: OldDesignator=Start Btn NewDesignator=Start Button
+Added Pin To Net: NetName=NetATMega_15 Pin=ATMega-15
+Added Pin To Net: NetName=NetATMega_15 Pin=Speaker-1
+Added Net: Name=NetATMega_15

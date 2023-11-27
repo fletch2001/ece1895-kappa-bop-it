@@ -63,13 +63,31 @@ void display_command_and_score_to_oled(String command) {
   display.display();
 }
 
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
+int16_t prev_gx, prev_gy, prev_gz;
+
 void loop() {
 
-  
+  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  //accelgyro.getRotation(&gx, &gy, &gz);
 
   // keep increasing the rand seed counter until start is pressed. This will add a randomness effect
   // because we don't have an RTC to keep track of time.
-  display.clearDisplay()
+  display.clearDisplay();
   display.setCursor(0, 0);
-  display.println()
+  display.print(ax);
+  display.print(",");
+  display.print(ay);
+  display.print(",");
+  display.println(az);
+  // display.print(gx);
+  // display.print(",");
+  // display.print(gy);
+  // display.print(",");
+  // display.println(gz);
+  display.setCursor(0,0);
+  display.display();
+
+  delay(2*1000);
 }
