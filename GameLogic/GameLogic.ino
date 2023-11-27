@@ -8,11 +8,6 @@
 #include <Adafruit_SSD1306.h>
 #include "MPU6050.h"
 
-#define START_BUTTON 4
-#define LED1 6
-#define LED2 7
-#define LED3 8
-
 #define SD_CS 16
 
 // defines for pins for inputs
@@ -55,8 +50,8 @@ int score = 0;
 int rand_seed_counter;
 
 // initialize file for sd card
-File sdCard;
-TMRpcm tmrpcm;
+// File sdCard;
+// TMRpcm tmrpcm;
 
 void setup() {
   rand_seed_counter = 0;
@@ -65,7 +60,7 @@ void setup() {
   pinMode(START_BUTTON, INPUT);
 
   // initialize accelgyro
-  accelgyro.initialize();
+  // accelgyro.initialize();
 
   // initialize current potentiometer values as the baseline
   PREV_TWIST_IT = analogRead(TWIST_IT_ROT_POT);
@@ -74,20 +69,28 @@ void setup() {
   // if OLED setup fails, program will hang
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) while(true);
 
+  display.print("in setup");
+  display.display();
+
   // set default OLED writing settings
   display.setTextSize(1);
   display.setTextColor(WHITE);
 
   // setup speaker
-  tmrpcm.speakerPin = 14;
+  // tmrpcm.speakerPin = 14;
 
+/*
   if(!SD.begin(SD_CS))
     return;
   
   tmrpcm.setVolume(6);
   tmrpcm.play("test_sound.wav");
+*/
 }
 
+void loop() {}
+
+/*
 // function to write score to OLED display
 void display_score_to_oled() {
   // set cursor to first line and write score
@@ -232,7 +235,7 @@ void loop() {
   while(digitalRead(START_BUTTON) == LOW) {
     display.clearDisplay();
     display.setCursor(0, 0);
-    display.print("waiting...");
+    display.print("here...");
     display.display();
     display.clearDisplay();
     rand_seed_counter++;
@@ -280,3 +283,4 @@ void loop() {
     }
   }
 }
+*/
