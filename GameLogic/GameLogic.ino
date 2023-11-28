@@ -263,16 +263,66 @@ void wait_for_user_response(int command) {
 }
 
 void loop() {
-    // keep increasing the rand seed counter until start is pressed. This will add a randomness effect
-    // because we don't have an RTC to keep track of time.
-    while (digitalRead(START_BUTTON) == LOW) {
-        display.clearDisplay();
-        display.setCursor(0, 0);
-        display.setTextSize(1);
-        display.print("waiting...");
-        display.display();
-        display.clearDisplay();
-        rand_seed_counter++;
+
+  // keep increasing the rand seed counter until start is pressed. This will add a randomness effect
+  // because we don't have an RTC to keep track of time.
+  while(digitalRead(START_BUTTON) == LOW) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("waiting...");
+    display.display();
+    display.clearDisplay();
+    rand_seed_counter++;
+  }
+
+  // wait for button to be let-go of
+  while(digitalRead(START_BUTTON) == HIGH);
+  display.clearDisplay();
+
+  // seed random numbers
+  srand(rand_seed_counter);
+
+  // loop for the game
+  bool isRunning = true;
+  if (!isRunning) { // game has not started (ie. button needs to be pressed)
+      display.setCursor(0, 0);
+      display.print("game is not running");
+      display.display();
+  } 
+  
+  // game is running - run game loop
+  else {
+    while (true) {
+      // get a random command
+      int command = rand() % 3;
+
+      // twist it
+      if (command == TwistIt) {
+        // output sound
+        tone(SPEAKER, 10000, 500);
+
+        // poll for user input
+        wait_for_user_response(TWIST_IT);
+        delay(1000);
+      }
+      // pour it
+      else if (command == PourIt) {
+        // output sound
+        tone(SPEAKER, 20000, 500);
+
+        // poll for user input
+        wait_for_user_response(POUR_IT);
+        delay(1000);    
+      }
+      // rip it
+      else if (command == RipIt) {
+          // output sound
+          tone(SPEAKER, 40000, 500);
+
+          // poll for user input
+          wait_for_user_response(RIP_IT);    
+          delay(1000);
+      }
     }
 
     // wait for button to be let-go of
