@@ -326,8 +326,7 @@ void loop() {
     }
 
     // wait for button to be let-go of
-    while (digitalRead(START_BUTTON) == HIGH)
-        ;
+    while (digitalRead(START_BUTTON) == HIGH);
     display.clearDisplay();
 
     // seed random numbers
