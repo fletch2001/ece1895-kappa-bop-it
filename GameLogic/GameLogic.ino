@@ -37,6 +37,7 @@ int current_command;
 // global vars for previous potentiometer inputs
 int PREV_TWIST_IT;
 int PREV_RIP_IT;
+#define TOLERANCE 10
 
 // initialize OLED display and IMU
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
@@ -63,8 +64,8 @@ void setup() {
   // accelgyro.initialize();
 
   // initialize current potentiometer values as the baseline
-  PREV_TWIST_IT = analogRead(TWIST_IT_ROT_POT);
-  PREV_RIP_IT = analogRead(RIP_IT_SLIDE_POT);
+  PREV_TWIST_IT = map(analogRead(TWIST_IT_ROT_POT), 0, 1023, 0, 179);
+  PREV_RIP_IT = map(analogRead(RIP_IT_SLIDE_POT), 0, 1023, 0, 179);
 
   // if OLED setup fails, program will hang
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) while(true);
@@ -113,11 +114,21 @@ void display_command_and_score_to_oled() {
 // functions to poll the sensors
 // the 1,2,4 method - no combination of them equals another and then we can distinguish between outputs passed back.
 int poll_twist_it() {
-  if(analogRead(TWIST_IT_ROT_POT) != PREV_TWIST_IT) {
-    PREV_TWIST_IT = analogRead(TWIST_IT_ROT_POT);
-    return PREV_TWIST_IT;
-  }
-  else return 0;
+  int twistVal = analogRead(TWIST_IT_ROT_POT);
+
+  twistVal = map(twistVal, 0, 1023, 0, 179);
+  delay(15);
+
+  // find difference between current val and prev val
+  int diff = abs(val - PREV_TWIST_IT);
+
+  // if difference is greater than tolerance, store old val and return correct
+  if(diff > TOLERANCE)
+  {
+      oldVal = val;
+      return 1;
+  }     
+    return 0;
 }
 
 int poll_rip_it() {
