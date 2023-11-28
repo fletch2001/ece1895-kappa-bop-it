@@ -171,7 +171,7 @@ int poll_pour_it() {
     // check not upright
 
 #if UPRIGHT_DIRECTION == Z
-    if (az < ax && az < ay) {
+    if (abs(az) < abs(ax) && abs(az) < abs(ay)) {
         // display.setCursor(0, 100);
         // display.println("not upright");
         // display.display();
@@ -232,6 +232,7 @@ void wait_for_user_response(int command) {
     display.setCursor(0,0);
     display.setTextSize(1);
     display.println(String(ax) + ", " + String(ay) + ", " + String(az));
+    display.println(String(command) + "\n" + String(command_sum[command]) + "\n" + String(sensor_sum));
     display.display();
     hold();
 #endif
@@ -258,6 +259,7 @@ void wait_for_user_response(int command) {
         // if input was correct, increase score and decrease allowed input time
         score++;
         inputTime -= 0.02;
+        display.clearDisplay();
         display_score_to_oled();
     }
 }
@@ -269,6 +271,7 @@ void loop() {
   while(digitalRead(START_BUTTON) == LOW) {
     display.clearDisplay();
     display.setCursor(0, 0);
+    display.setTextSize(1);
     display.print("waiting...");
     display.display();
     display.clearDisplay();
@@ -292,82 +295,31 @@ void loop() {
   
   // game is running - run game loop
   else {
-    while (true) {
+      while (true) {
       // get a random command
-      int command = rand() % 3;
-
+      // int command = rand() % 3;
+      int command = PourIt;
       // twist it
       if (command == TwistIt) {
-        // output sound
-        tone(SPEAKER, 10000, 500);
+          // output sound
+          tone(SPEAKER, 10000, 500);
 
-        // poll for user input
-        wait_for_user_response(TWIST_IT);
-        delay(1000);
+          // poll for user input
+          wait_for_user_response(TWIST_IT);
+          wait(1000);
       }
       // pour it
       else if (command == PourIt) {
-        // output sound
-        tone(SPEAKER, 20000, 500);
-
-        // poll for user input
-        wait_for_user_response(POUR_IT);
-        delay(1000);    
+          // poll for user input
+          wait_for_user_response(POUR_IT);
+          wait(1000);
       }
       // rip it
       else if (command == RipIt) {
-          // output sound
-          tone(SPEAKER, 40000, 500);
-
           // poll for user input
-          wait_for_user_response(RIP_IT);    
+          wait_for_user_response(RIP_IT);
           delay(1000);
       }
-    }
-
-    // wait for button to be let-go of
-    while (digitalRead(START_BUTTON) == HIGH);
-    display.clearDisplay();
-
-    // seed random numbers
-    srand(rand_seed_counter);
-
-    // loop for the game
-    bool isRunning = true;
-    if (!isRunning) {  // game has not started (ie. button needs to be pressed)
-        display.setCursor(0, 0);
-        display.print("game is not running");
-        display.display();
-    }
-
-    // game is running - run game loop
-    else {
-        while (true) {
-            // get a random command
-            // int command = rand() % 3;
-            int command = PourIt;
-            // twist it
-            if (command == TwistIt) {
-                // output sound
-                tone(SPEAKER, 10000, 500);
-
-                // poll for user input
-                wait_for_user_response(TWIST_IT);
-                wait(1000);
-            }
-            // pour it
-            else if (command == PourIt) {
-                // poll for user input
-                wait_for_user_response(POUR_IT);
-                wait(1000);
-            }
-            // rip it
-            // else if (command == RipIt) {
-            //     // poll for user input
-            //     wait_for_user_response(RIP_IT);
-            //     delay(1000);
-            // }
-        }
     }
   }
 }
