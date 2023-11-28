@@ -4,8 +4,10 @@
 #include <SD.h>
 #include <TMRpcm.h>
 #include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+//#include <Adafruit_GFX.h>
+// https://github.com/greiman/SSD1306Ascii/blob/master/examples/HelloWorldAvrI2c/HelloWorldAvrI2c.ino
+#include <SSD1306Ascii.h>
+#include <SSD1306AsciiAvrI2c.h>
 #include "MPU6050.h"
 
 #define START_BUTTON 4
@@ -44,7 +46,8 @@ int PREV_TWIST_IT;
 int PREV_RIP_IT;
 
 // initialize OLED display and IMU
-Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
+SSD1306AsciiAvrI2c display;
+//Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
 MPU6050 accelgyro; 
 int16_t ax, ay, az;
 
@@ -71,12 +74,13 @@ void setup() {
   PREV_TWIST_IT = analogRead(TWIST_IT_ROT_POT);
   PREV_RIP_IT = analogRead(RIP_IT_SLIDE_POT);
 
-  // if OLED setup fails, program will hang
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) while(true);
+  display.begin(&Adafruit128x64, 0x3C);
+
+  // // if OLED setup fails, program will hang
+  // if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) while(true);
 
   // set default OLED writing settings
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
+  display.set1X();
 
   // setup speaker
   tmrpcm.speakerPin = 14;
@@ -92,23 +96,21 @@ void setup() {
 void display_score_to_oled() {
   // set cursor to first line and write score
   display.setCursor(0, 0);
-  display.setTextSize(1);
+  display.set1X();
   display.print("score: " + String(score));
-  display.display();
 }
 
 // function to display command to OLED display
 void display_command_to_oled() {
   // set cursor to second line and write command
   display.setCursor(0, 10);
-  display.setTextSize(2);
+  display.set2X();
   display.print(commands_list[current_command]);
-  display.display();
 }
 
 // wrapper function to write score and command
 void display_command_and_score_to_oled() {
-  display.clearDisplay();
+  display.clear();
   display_score_to_oled();
   display_command_to_oled();
 }
@@ -183,14 +185,13 @@ void wait_for_user_response(int command) {
     // if time elapsed is longer than current input time allowed, game over!
     if ((timeAction - timeStart) > inputTime*1000) {
       // display score and game over message
-      display.clearDisplay();
+      display.clear();
       display.setCursor(0, 0);
-      display.setTextSize(1);
+      display.set1X();
       display.print("score = " + String(score) + "\n");
       display.setCursor(0, 10);
-      display.setTextSize(2);
+      display.set2X();
       display.print("GAME OVER!");
-      display.display();
       
       // hang at game over state
       while(1);
@@ -204,14 +205,13 @@ void wait_for_user_response(int command) {
   // if the sensor response is not the correct command, game over!
   if(sensor_sum != (command << 1)) {
     // display score and game over message
-    display.clearDisplay();
+    display.clear();
     display.setCursor(0, 0);
-    display.setTextSize(1);
+    display.set1X();
     display.print("score = " + String(score) + "\n");
     display.setCursor(0, 10);
-    display.setTextSize(2);
+    display.set2X();
     display.print("GAME OVER!");
-    display.display();
 
     // hang at game over state
     while(1);
@@ -230,17 +230,16 @@ void loop() {
   // keep increasing the rand seed counter until start is pressed. This will add a randomness effect
   // because we don't have an RTC to keep track of time.
   while(digitalRead(START_BUTTON) == LOW) {
-    display.clearDisplay();
+    display.clear();
     display.setCursor(0, 0);
     display.print("waiting...");
-    display.display();
-    display.clearDisplay();
+    display.clear();
     rand_seed_counter++;
   }
 
   // wait for button to be let-go of
   while(digitalRead(START_BUTTON) == HIGH);
-  display.clearDisplay();
+  display.clear();
 
   // seed random numbers
   srand(rand_seed_counter);
@@ -250,7 +249,6 @@ void loop() {
   if (!isRunning) { // game has not started (ie. button needs to be pressed)
       display.setCursor(0, 0);
       display.print("game is not running");
-      display.display();
   } 
   
   // game is running - run game loop
