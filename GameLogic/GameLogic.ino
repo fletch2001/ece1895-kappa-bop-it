@@ -351,7 +351,6 @@ void loop() {
             if (command == TwistIt) {
                 // output sound
                 tone(SPEAKER, 10000, 500);
-                noTone(SPEAKER);
 
                 // poll for user input
                 wait_for_user_response(TWIST_IT);
