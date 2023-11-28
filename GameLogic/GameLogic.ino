@@ -1,13 +1,13 @@
 // includes for libraries used
-#include <SPI.h>
 #include <time.h>
-// #include <SD.h>
-// #include <TMRpcm.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
 #include <avr/io.h>
 #include <math.h>
+
+
+#define DEBUG 1
 
 #include "MPU6050.h"
 
@@ -80,7 +80,7 @@ void setup() {
     pinMode(START_BUTTON, INPUT);
 
     // initialize accelgyro
-    // accelgyro.initialize();
+    accelgyro.initialize();
 
     // initialize current potentiometer values as the baseline
     PREV_TWIST_IT = map(analogRead(TWIST_IT_ROT_POT), 0, 1023, 0, 179);
@@ -101,8 +101,7 @@ void setup() {
 
 void wait(uint16_t ms) {
     int time_start = millis();
-    while (millis() - time_start < ms)
-        ;
+    while (millis() - time_start < ms);
 }
 
 // function to write score to OLED display
@@ -169,7 +168,6 @@ int poll_rip_it() {
 
 int poll_pour_it() {
     accelgyro.getAcceleration(&ax, &ay, &az);
-    return 4;
     // check not upright
 
 #if UPRIGHT_DIRECTION == Z
@@ -228,6 +226,15 @@ void wait_for_user_response(int command) {
         timeAction = millis();
         sensor_sum = poll_sensors();
     }
+
+#ifdef DEBUG
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.setTextSize(1);
+    display.println(String(ax) + ", " + String(ay) + ", " + String(az));
+    display.display();
+    hold();
+#endif
     
     // if time elapsed is longer than current input time allowed, game over!
     if (sensor_sum != command_sum[command]) {
