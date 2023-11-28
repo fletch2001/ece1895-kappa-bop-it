@@ -268,7 +268,6 @@ void loop() {
       if (command == TwistIt) {
         // output sound
         tone(SPEAKER, 10000, 500);
-        noTone(SPEAKER);
 
         // poll for user input
         wait_for_user_response(TWIST_IT);
@@ -276,12 +275,18 @@ void loop() {
       }
       // pour it
       else if (command == PourIt) {
+        // output sound
+        tone(SPEAKER, 20000, 500);
+
         // poll for user input
         wait_for_user_response(POUR_IT);
         delay(1000);    
       }
       // rip it
       else if (command == RipIt) {
+          // output sound
+          tone(SPEAKER, 40000, 500);
+
           // poll for user input
           wait_for_user_response(RIP_IT);    
           delay(1000);
