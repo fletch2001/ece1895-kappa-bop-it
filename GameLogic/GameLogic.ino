@@ -1,8 +1,8 @@
 // includes for libraries used
 #include <time.h>
 #include <SPI.h>
-#include <SD.h>
-#include <TMRpcm.h>
+//#include <SD.h>
+//#include <TMRpcm.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -12,8 +12,8 @@
 
 // defines for pins for inputs
 #define START_BUTTON 5
-#define RIP_IT_SLIDE_POT 19
-#define TWIST_IT_ROT_POT 17
+#define RIP_IT_SLIDE_POT A2
+#define TWIST_IT_ROT_POT A3
 
 // define for speaker output
 #define SPEAKER 15
@@ -69,9 +69,6 @@ void setup() {
   // if OLED setup fails, program will hang
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) while(true);
 
-  display.print("in setup");
-  display.display();
-
   // set default OLED writing settings
   display.setTextSize(1);
   display.setTextColor(WHITE);
@@ -88,9 +85,6 @@ void setup() {
 */
 }
 
-void loop() {}
-
-/*
 // function to write score to OLED display
 void display_score_to_oled() {
   // set cursor to first line and write score
@@ -121,13 +115,13 @@ void display_command_and_score_to_oled() {
 int poll_twist_it() {
   if(analogRead(TWIST_IT_ROT_POT) != PREV_TWIST_IT) {
     PREV_TWIST_IT = analogRead(TWIST_IT_ROT_POT);
-    return 1;
+    return PREV_TWIST_IT;
   }
   else return 0;
 }
 
 int poll_rip_it() {
-  if(analogRead(RIP_IT_SLIDE_POT) != PREV_RIP_IT) {
+  if(analogRead(RIP_IT_SLIDE_POT) > PREV_RIP_IT + 100 || analogRead(RIP_IT_SLIDE_POT) < PREV_RIP_IT - 100) {
     PREV_RIP_IT = analogRead(RIP_IT_SLIDE_POT);
     return 2;
   }
@@ -164,13 +158,14 @@ int poll_pour_it() {
 }
 
 int poll_sensors() {
-  return poll_pour_it() + poll_rip_it() + poll_twist_it();
+  return poll_rip_it();
+  //poll_pour_it() + poll_twist_it()
 }
 
 // function to poll sensors and check if the user responded within the time limit
 void wait_for_user_response(int command) {  
   // set current command display it
-  current_command = command;
+  current_command = 1;
   display_command_and_score_to_oled();
 
   // initialize the start time of the command being sent
@@ -179,7 +174,7 @@ void wait_for_user_response(int command) {
 
   // wait for input to go to desired and then back to normal state
   int timeAction = timeStart;
-  while(!sensor_sum) {
+  while(sensor_sum != 2) {
     // constantly poll time elapsed
     timeAction = millis();
 
@@ -192,7 +187,7 @@ void wait_for_user_response(int command) {
       display.print("score = " + String(score) + "\n");
       display.setCursor(0, 10);
       display.setTextSize(2);
-      display.print("GAME OVER!");
+      display.print("GAME OVER (time)!");
       display.display();
       
       // hang at game over state
@@ -212,8 +207,9 @@ void wait_for_user_response(int command) {
     display.setTextSize(1);
     display.print("score = " + String(score) + "\n");
     display.setCursor(0, 10);
-    display.setTextSize(2);
-    display.print("GAME OVER!");
+    display.setTextSize(1);
+    display.print("GAME OVER (wrong input)!" + String(PREV_TWIST_IT) + "\n");
+    display.print(command << 1);
     display.display();
 
     // hang at game over state
@@ -235,7 +231,7 @@ void loop() {
   while(digitalRead(START_BUTTON) == LOW) {
     display.clearDisplay();
     display.setCursor(0, 0);
-    display.print("here...");
+    display.print("waiting...");
     display.display();
     display.clearDisplay();
     rand_seed_counter++;
@@ -283,4 +279,3 @@ void loop() {
     }
   }
 }
-*/
