@@ -7,6 +7,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "MPU6050.h"
+#include <avr/io.h>
+
+#define F_CPU 8000000UL
 
 #define SD_CS 16
 
@@ -75,15 +78,7 @@ void setup() {
   display.setTextColor(WHITE);
 
   // setup speaker
-  // tmrpcm.speakerPin = 14;
-
-/*
-  if(!SD.begin(SD_CS))
-    return;
-  
-  tmrpcm.setVolume(6);
-  tmrpcm.play("test_sound.wav");
-*/
+  pinmode(SPEAKER, OUTPUT);
 }
 
 // function to write score to OLED display
@@ -271,6 +266,10 @@ void loop() {
 
       // twist it
       if (command == TwistIt) {
+        // output sound
+        tone(SPEAKER, 10000, 500);
+        noTone(SPEAKER);
+
         // poll for user input
         wait_for_user_response(TWIST_IT);
         delay(1000);
