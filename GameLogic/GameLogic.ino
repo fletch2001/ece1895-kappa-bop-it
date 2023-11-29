@@ -7,13 +7,9 @@
 #include <math.h>
 
 
-#define DEBUG 1
+//#define DEBUG 1
 
 #include "MPU6050.h"
-
-#define F_CPU 8000000UL
-
-#define SD_CS 16
 
 // defines for pins for inputs
 #define START_BUTTON 5
@@ -21,7 +17,7 @@
 #define TWIST_IT_ROT_POT 17
 
 // define for speaker output
-#define SPEAKER 15
+#define SPEAKER 9
 
 // defines for input commands
 #define TWIST_IT 0
@@ -53,17 +49,15 @@ int current_command;
 // global vars for previous potentiometer inputs
 int PREV_TWIST_IT;
 int PREV_RIP_IT;
-#define TOLERANCE 10
+#define TOLERANCE 75
 
 // initialize OLED display and IMU
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
 MPU6050 accelgyro;
 int16_t ax, ay, az;
 
-// initialize input time, score, and random seed
-// global vars for input time, score, and random seed
-float inputTime = 2;
-int score = 0;
+int score;
+float inputTime;
 int rand_seed_counter;
 
 int oldTwistVal;
@@ -117,7 +111,7 @@ void display_score_to_oled() {
 void display_command_to_oled() {
     // set cursor to second line and write command
     display.setCursor(0, 10);
-    display.setTextSize(2);
+    display.setTextSize(1);
     display.print(commands_list[current_command]);
     display.display();
 }
@@ -134,21 +128,8 @@ void display_command_and_score_to_oled() {
 int poll_twist_it() {
     int twistVal = map(analogRead(TWIST_IT_ROT_POT), 0, 1023, 0, 179);
 
-    // twistVal = map(twistVal, 0, 1023, 0, 179);
-    // wait(15);
-
     // find difference between current val and prev val
     int diff = abs(twistVal - PREV_TWIST_IT);
-
-    // display.clearDisplay();
-    // display.setCursor(0, 0);
-    // display.setTextSize(1);
-    // display.print("twist: ");
-
-    // display.println(String(diff));
-    // display.println("waiting for start");
-    // display.display();
-    // hold();
 
     // if difference is greater than tolerance, store old val and return correct
     if (diff > TOLERANCE) {
@@ -159,11 +140,17 @@ int poll_twist_it() {
 }
 
 int poll_rip_it() {
-    if (analogRead(RIP_IT_SLIDE_POT) > PREV_RIP_IT + 100 || analogRead(RIP_IT_SLIDE_POT) < PREV_RIP_IT - 100) {
-        PREV_RIP_IT = analogRead(RIP_IT_SLIDE_POT);
+    int ripVal = map(analogRead(RIP_IT_SLIDE_POT), 0, 1023, 0, 179);
+
+    // find difference between current val and prev val
+    int diff = abs(ripVal - PREV_RIP_IT);
+
+    // if difference is greater than tolerance, store old val and return correct
+    if (diff > TOLERANCE) {
+        PREV_RIP_IT = ripVal;
         return 2;
-    } else
-        return 0;
+    }
+    return 0;
 }
 
 int poll_pour_it() {
@@ -171,7 +158,7 @@ int poll_pour_it() {
     // check not upright
 
 #if UPRIGHT_DIRECTION == Z
-    if (abs(az) < abs(ax) && abs(az) < abs(ay)) {
+    if (abs(az) < abs(ax) - 100 && abs(az) < abs(ay) - 100) {
         // display.setCursor(0, 100);
         // display.println("not upright");
         // display.display();
@@ -211,10 +198,6 @@ void wait_for_user_response(int command) {
 
     // initialize the start time of the command being sent
     int timeStart = millis();
-
-    // busy-wait 0.8 seconds to sample user input
-    // while(millis() - timeStart < 800);
-
     int sensor_sum = poll_sensors();
 
     // wait for input to go to desired and then back to normal state
@@ -247,7 +230,6 @@ void wait_for_user_response(int command) {
         display.setCursor(0, 10);
         display.setTextSize(2);
         display.print("GAME OVER!\n\n");
-        display.print(String(sensor_sum) + "\n" + commands_list[sensor_sum >> 1]);
         display.display();
 
         while(digitalRead(START_BUTTON) == LOW);
@@ -261,10 +243,14 @@ void wait_for_user_response(int command) {
         inputTime -= 0.02;
         display.clearDisplay();
         display_score_to_oled();
+        delay(1000);
     }
 }
 
 void loop() {
+
+  score = 0;
+  inputTime = 3;
 
   // keep increasing the rand seed counter until start is pressed. This will add a randomness effect
   // because we don't have an RTC to keep track of time.
@@ -295,30 +281,34 @@ void loop() {
   
   // game is running - run game loop
   else {
-      while (true) {
+      while (score <= 99) {
       // get a random command
-      // int command = rand() % 3;
-      int command = PourIt;
+      int command = rand() % 3;
+      //int command = 1;
+
       // twist it
       if (command == TwistIt) {
-          // output sound
-          tone(SPEAKER, 10000, 500);
+        // output sound
+        tone(SPEAKER, 5000, 500);
 
-          // poll for user input
-          wait_for_user_response(TWIST_IT);
-          wait(1000);
+        // poll for user input
+        wait_for_user_response(TWIST_IT);
+        wait(1000);
       }
       // pour it
       else if (command == PourIt) {
-          // poll for user input
-          wait_for_user_response(POUR_IT);
-          wait(1000);
+        tone(SPEAKER, 2500, 500);
+
+        // poll for user input
+        wait_for_user_response(POUR_IT);
+        wait(1000);
       }
       // rip it
       else if (command == RipIt) {
-          // poll for user input
-          wait_for_user_response(RIP_IT);
-          delay(1000);
+        tone(SPEAKER, 1000, 500);
+        // poll for user input
+        wait_for_user_response(RIP_IT);
+        delay(1000);
       }
     }
   }
