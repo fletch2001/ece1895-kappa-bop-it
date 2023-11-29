@@ -13,7 +13,7 @@
 
 // defines for pins for inputs
 #define START_BUTTON 5
-#define RIP_IT_SLIDE_POT 19
+#define RIP_IT_SLIDE_POT A2
 #define TWIST_IT_ROT_POT 17
 
 // define for speaker output
@@ -182,8 +182,7 @@ int poll_pour_it() {
 }
 
 int poll_sensors() {
-    // return poll_rip_it();
-    return poll_pour_it() + poll_twist_it();
+    return poll_rip_it() + poll_pour_it() + poll_twist_it();
 }
 
 // function to poll sensors and check if the user responded within the time limit
@@ -228,8 +227,9 @@ void wait_for_user_response(int command) {
         display.setTextSize(1);
         display.print("score = " + String(score) + "\n");
         display.setCursor(0, 10);
-        display.setTextSize(2);
+        display.setTextSize(1);
         display.print("GAME OVER!\n\n");
+
         display.display();
 
         while(digitalRead(START_BUTTON) == LOW);
@@ -274,42 +274,42 @@ void loop() {
   // loop for the game
   bool isRunning = true;
   if (!isRunning) { // game has not started (ie. button needs to be pressed)
-      display.setCursor(0, 0);
-      display.print("game is not running");
-      display.display();
+    display.setCursor(0, 0);
+    display.print("game is not running");
+    display.display();
   } 
   
   // game is running - run game loop
   else {
       while (score <= 99) {
-      // get a random command
-      int command = rand() % 3;
-      //int command = 1;
+        // get a random command
+        //int command = rand() % 3;
+        int command = 1;
 
-      // twist it
-      if (command == TwistIt) {
-        // output sound
-        tone(SPEAKER, 5000, 500);
+        // twist it
+        if (command == TwistIt) {
+          // output sound
+          tone(SPEAKER, 5000, 500);
 
-        // poll for user input
-        wait_for_user_response(TWIST_IT);
-        wait(1000);
-      }
-      // pour it
-      else if (command == PourIt) {
-        tone(SPEAKER, 2500, 500);
+          // poll for user input
+          wait_for_user_response(TWIST_IT);
+          wait(1000);
+        }
+        // pour it
+        else if (command == PourIt) {
+          tone(SPEAKER, 2500, 500);
 
-        // poll for user input
-        wait_for_user_response(POUR_IT);
-        wait(1000);
+          // poll for user input
+          wait_for_user_response(POUR_IT);
+          wait(1000);
+        }
+        // rip it
+        else if (command == RipIt) {
+          tone(SPEAKER, 1000, 500);
+          // poll for user input
+          wait_for_user_response(RIP_IT);
+          delay(1000);
+        }
       }
-      // rip it
-      else if (command == RipIt) {
-        tone(SPEAKER, 1000, 500);
-        // poll for user input
-        wait_for_user_response(RIP_IT);
-        delay(1000);
-      }
-    }
   }
 }
