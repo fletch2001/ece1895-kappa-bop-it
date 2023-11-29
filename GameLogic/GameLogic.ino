@@ -45,6 +45,7 @@ int current_command;
 
 // defines for accelerometer
 #define UPRIGHT_DIRECTION Z
+#define POUR_IT_TOLERANCE 100
 
 // global vars for previous potentiometer inputs
 int PREV_TWIST_IT;
@@ -158,7 +159,8 @@ int poll_pour_it() {
     // check not upright
 
 #if UPRIGHT_DIRECTION == Z
-    if (abs(az) < abs(ax) - 100 && abs(az) < abs(ay) - 100) {
+    if (POUR_IT_TOLERANCE * abs(az) < abs(ax) && POUR_IT_TOLERANCE * abs(az) < abs(ay) || 
+        az < 0 && POUR_IT_TOLERANCE * abs(az) > abs(ax) && POUR_IT_TOLERANCE * abs(az) > abs(ay)) {
         // display.setCursor(0, 100);
         // display.println("not upright");
         // display.display();
