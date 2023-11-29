@@ -7,7 +7,7 @@
 #include <math.h>
 
 
-//#define DEBUG 1
+#define DEBUG 1
 
 #include "MPU6050.h"
 
@@ -23,6 +23,9 @@
 #define TWIST_IT 0
 #define RIP_IT 1
 #define POUR_IT 2
+
+#define A_MIN 265
+#define A_MAX 401
 
 #define hold()                                \
     while (digitalRead(START_BUTTON) == LOW)  \
@@ -45,7 +48,7 @@ int current_command;
 
 // defines for accelerometer
 #define UPRIGHT_DIRECTION Z
-#define POUR_IT_TOLERANCE 100
+#define POUR_IT_TOLERANCE 1
 
 // global vars for previous potentiometer inputs
 int PREV_TWIST_IT;
@@ -159,8 +162,8 @@ int poll_pour_it() {
     // check not upright
 
 #if UPRIGHT_DIRECTION == Z
-    if (abs(az) / POUR_IT_TOLERANCE < abs(ax) && abs(az) / POUR_IT_TOLERANCE < abs(ay) || 
-        az < 0 && POUR_IT_TOLERANCE * abs(az) > abs(ax) && abs(az) / POUR_IT_TOLERANCE > abs(ay)) {
+    if (abs(az) / POUR_IT_TOLERANCE < abs(ax) || abs(az) / POUR_IT_TOLERANCE < abs(ay) || 
+        (az < 0 && (abs(az) > abs(ax) / POUR_IT_TOLERANCE || abs(az) / POUR_IT_TOLERANCE > abs(ay)))) {
         // display.setCursor(0, 100);
         // display.println("not upright");
         // display.display();
