@@ -281,10 +281,11 @@ void loop() {
   
   // game is running - run game loop
   else {
+      delay(2000);
       while (score <= 99) {
         // get a random command
-        //int command = rand() % 3;
-        int command = 1;
+        int command = rand() % 3;
+        //int command = 1;
 
         // twist it
         if (command == TwistIt) {
