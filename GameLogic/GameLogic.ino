@@ -159,8 +159,8 @@ int poll_pour_it() {
     // check not upright
 
 #if UPRIGHT_DIRECTION == Z
-    if (POUR_IT_TOLERANCE * abs(az) < abs(ax) && POUR_IT_TOLERANCE * abs(az) < abs(ay) || 
-        az < 0 && POUR_IT_TOLERANCE * abs(az) > abs(ax) && POUR_IT_TOLERANCE * abs(az) > abs(ay)) {
+    if (abs(az) / POUR_IT_TOLERANCE < abs(ax) && abs(az) / POUR_IT_TOLERANCE < abs(ay) || 
+        az < 0 && POUR_IT_TOLERANCE * abs(az) > abs(ax) && abs(az) / POUR_IT_TOLERANCE > abs(ay)) {
         // display.setCursor(0, 100);
         // display.println("not upright");
         // display.display();
