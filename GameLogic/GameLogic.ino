@@ -7,9 +7,10 @@
 #include <math.h>
 
 
-#define DEBUG 1
+//#define DEBUG 1
 
 #include "MPU6050.h"
+#define MPU_ADDR 0x68
 
 // defines for pins for inputs
 #define START_BUTTON 5
@@ -49,6 +50,7 @@ int current_command;
 // defines for accelerometer
 #define UPRIGHT_DIRECTION Z
 #define POUR_IT_TOLERANCE 1
+#define POUR_IT_ANGLE 45
 
 // global vars for previous potentiometer inputs
 int PREV_TWIST_IT;
@@ -67,6 +69,10 @@ int rand_seed_counter;
 int oldTwistVal;
 int oldRipVal;
 
+double X_ANG;
+double Y_ANG;
+double Z_ANG;
+
 // initialize file for sd card
 // File sdCard;
 // TMRpcm tmrpcm;
@@ -78,7 +84,12 @@ void setup() {
     pinMode(START_BUTTON, INPUT);
 
     // initialize accelgyro
-    accelgyro.initialize();
+    //accelgyro.initialize();
+    Wire.begin();
+    Wire.beginTransmission(MPU_ADDR);
+    Wire.write(0x6B);
+    Wire.write(0);
+    Wire.endTransmission(true);
 
     // initialize current potentiometer values as the baseline
     PREV_TWIST_IT = map(analogRead(TWIST_IT_ROT_POT), 0, 1023, 0, 179);
@@ -127,6 +138,16 @@ void display_command_and_score_to_oled() {
     display_command_to_oled();
 }
 
+void get_angle() {
+  int xAng = map(ax, A_MIN, A_MAX, -90, 90);
+  int yAng = map(ay, A_MIN, A_MAX, -90, 90);
+  int zAng = map(az, A_MIN, A_MAX, -90, 90);
+
+  X_ANG = RAD_TO_DEG * (atan2(-yAng, -zAng) + PI);
+  Y_ANG = RAD_TO_DEG * (atan2(-xAng, -zAng) + PI);
+  Z_ANG = RAD_TO_DEG * (atan2(-yAng, -xAng) + PI);
+}
+
 // functions to poll the sensors
 // the 1,2,4 method - no combination of them equals another and then we can distinguish between outputs passed back.
 int poll_twist_it() {
@@ -136,7 +157,7 @@ int poll_twist_it() {
     int diff = abs(twistVal - PREV_TWIST_IT);
 
     // if difference is greater than tolerance, store old val and return correct
-    if (diff > TOLERANCE) {
+    if (diff > 100) {
         PREV_TWIST_IT = twistVal;
         return 1;
     }
@@ -158,36 +179,31 @@ int poll_rip_it() {
 }
 
 int poll_pour_it() {
-    accelgyro.getAcceleration(&ax, &ay, &az);
+    //accelgyro.getAcceleration(&ax, &ay, &az);
     // check not upright
 
-#if UPRIGHT_DIRECTION == Z
-    if (abs(az) / POUR_IT_TOLERANCE < abs(ax) || abs(az) / POUR_IT_TOLERANCE < abs(ay) || 
-        (az < 0 && (abs(az) > abs(ax) / POUR_IT_TOLERANCE || abs(az) / POUR_IT_TOLERANCE > abs(ay)))) {
-        // display.setCursor(0, 100);
-        // display.println("not upright");
-        // display.display();
-        return 4;
-#elif UPRIGHT_DIRECTION == X
-    if (ax < ay && ax < az) {
-        // display.setCursor(0, 100);
-        // display.println("not upright");
-        // display.display();
-        return 4;
-#elif UPRIGHT_DIRECTION == Y
-    if (ay < ax && ay < az) {
-        // display.setCursor(0, 100);
-        // display.println("not upright");
-        // display.display();
-        return 4;
-#endif
+    // from how2electronics.com/measure-tilt-angle-mpu6050-arduino/
+    Wire.beginTransmission(MPU_ADDR);
+    Wire.write(0x3B);
+    Wire.endTransmission(false);
+    Wire.requestFrom(MPU_ADDR, 6, true);
+    ax = Wire.read()<<8|Wire.read();
+    ay = Wire.read()<<8|Wire.read();
+    az = Wire.read()<<8|Wire.read();
+    Wire.endTransmission(true);
+
+    get_angle();
+
+    if(abs(Z_ANG) > POUR_IT_ANGLE) {
+      return 4;
     } else {
-        return 0;
+      return 0;
     }
 }
 
 int poll_sensors() {
-    return poll_rip_it() + poll_pour_it() + poll_twist_it();
+    return poll_rip_it() + poll_twist_it();
+    poll_pour_it();
 }
 
 // function to poll sensors and check if the user responded within the time limit
@@ -219,6 +235,7 @@ void wait_for_user_response(int command) {
     display.setCursor(0,0);
     display.setTextSize(1);
     display.println(String(ax) + ", " + String(ay) + ", " + String(az));
+    display.println(String(X_ANG) + " " + String(X_ANG) + " " + String(X_ANG));
     display.println(String(command) + "\n" + String(command_sum[command]) + "\n" + String(sensor_sum));
     display.display();
     hold();
@@ -263,8 +280,9 @@ void loop() {
     display.clearDisplay();
     display.setCursor((WIDTH / 2) - (String("BONK-IT!").length() / 2), 4);
     display.setTextSize(2);
-    display.print("BONK-IT!");
+    display.println("BONK-IT!");
     display.setTextSize(1);
+    display.print("press lid to start");
     display.display();
     rand_seed_counter++;
   }
@@ -289,7 +307,7 @@ void loop() {
       delay(2000);
       while (score <= 99) {
         // get a random command
-        int command = rand() % 3;
+        int command = rand() % 2;
         //int command = 1;
 
         // twist it
