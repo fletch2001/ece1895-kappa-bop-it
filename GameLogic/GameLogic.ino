@@ -256,11 +256,11 @@ void loop() {
   // because we don't have an RTC to keep track of time.
   while(digitalRead(START_BUTTON) == LOW) {
     display.clearDisplay();
-    display.setCursor(0, 0);
+    display.setCursor((HEIGHT / 2) - (String("BONK-IT!").length() / 2), 4);
+    display.setTextSize(2);
+    display.print("BONK-IT!");
     display.setTextSize(1);
-    display.print("waiting...");
     display.display();
-    display.clearDisplay();
     rand_seed_counter++;
   }
 
@@ -283,8 +283,7 @@ void loop() {
   else {
       while (score <= 99) {
         // get a random command
-        //int command = rand() % 3;
-        int command = 1;
+        int command = rand() % 3;
 
         // twist it
         if (command == TwistIt) {
