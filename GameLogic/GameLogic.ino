@@ -2,14 +2,12 @@
 #include <time.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <Wire.h>
-#include <avr/io.h>
+#include <MPU6050_light.h>
 #include <math.h>
 
 
 //#define DEBUG 1
 
-#include "MPU6050.h"
 #define MPU_ADDR 0x68
 
 // defines for pins for inputs
@@ -59,7 +57,7 @@ int PREV_RIP_IT;
 
 // initialize OLED display and IMU
 Adafruit_SSD1306 display(WIDTH, HEIGHT, &Wire, -1);
-MPU6050 accelgyro;
+MPU6050 mpu(Wire);
 int16_t ax, ay, az;
 
 int score;
@@ -84,12 +82,7 @@ void setup() {
     pinMode(START_BUTTON, INPUT);
 
     // initialize accelgyro
-    //accelgyro.initialize();
-    Wire.begin();
-    Wire.beginTransmission(MPU_ADDR);
-    Wire.write(0x6B);
-    Wire.write(0);
-    Wire.endTransmission(true);
+    mpu.begin();
 
     // initialize current potentiometer values as the baseline
     PREV_TWIST_IT = map(analogRead(TWIST_IT_ROT_POT), 0, 1023, 0, 179);
@@ -138,15 +131,15 @@ void display_command_and_score_to_oled() {
     display_command_to_oled();
 }
 
-void get_angle() {
-  int xAng = map(ax, A_MIN, A_MAX, -90, 90);
-  int yAng = map(ay, A_MIN, A_MAX, -90, 90);
-  int zAng = map(az, A_MIN, A_MAX, -90, 90);
+// void get_angle() {
+//   int xAng = map(ax, A_MIN, A_MAX, -90, 90);
+//   int yAng = map(ay, A_MIN, A_MAX, -90, 90);
+//   int zAng = map(az, A_MIN, A_MAX, -90, 90);
 
-  X_ANG = RAD_TO_DEG * (atan2(-yAng, -zAng) + PI);
-  Y_ANG = RAD_TO_DEG * (atan2(-xAng, -zAng) + PI);
-  Z_ANG = RAD_TO_DEG * (atan2(-yAng, -xAng) + PI);
-}
+//   X_ANG = RAD_TO_DEG * (atan2(-yAng, -zAng) + PI);
+//   Y_ANG = RAD_TO_DEG * (atan2(-xAng, -zAng) + PI);
+//   Z_ANG = RAD_TO_DEG * (atan2(-yAng, -xAng) + PI);
+// }
 
 // functions to poll the sensors
 // the 1,2,4 method - no combination of them equals another and then we can distinguish between outputs passed back.
@@ -183,16 +176,7 @@ int poll_pour_it() {
     // check not upright
 
     // from how2electronics.com/measure-tilt-angle-mpu6050-arduino/
-    Wire.beginTransmission(MPU_ADDR);
-    Wire.write(0x3B);
-    Wire.endTransmission(false);
-    Wire.requestFrom(MPU_ADDR, 6, true);
-    ax = Wire.read()<<8|Wire.read();
-    ay = Wire.read()<<8|Wire.read();
-    az = Wire.read()<<8|Wire.read();
-    Wire.endTransmission(true);
-
-    get_angle();
+    Z_ANG = mpu.getAngleZ();
 
     if(abs(Z_ANG) > POUR_IT_ANGLE) {
       return 4;
