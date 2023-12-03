@@ -2,25 +2,11 @@
 ## Team Kappa Bop-it project: Bonk-it
 
 ### Repository Structure:
-├── Hello-World
-├── OLEDTesting
-├── PCB-design-files
-│   ├── History
-│   ├── Project Logs for Bop_it
-│   ├── Project Outputs for Bop_it
-│   └── __Previews
-├── SDCard
-│   └── sd_audio_test
-├── accel_test
-│   └── build
-│       └── arduino.avr.uno
-├── bonk-it-code
-│   ├── build
-│   │   └── arduino.avr.uno
-│   └── data
-└── timing_test
-    └── build
-        └── arduino.avr.uno
-
-[bonk-it-code](bonk-it-code) houses the code and binaries deployed to the ATMEGA µprocessor.
+[Hello-World](Hello-World) original Hello World Assignment for git demonstration\
+[OLEDTesting](OLEDTesting) original OLED testing\
+[PCB-design-files](PCB-design-files) PCB files\
+[SDCard](SDCard) code to test the SD card interfaced with the speaker\
+[accel_test](accel_test) code to test the accelerometer intefaced with the OLED\
+[bonk-it-code](bonk-it-code) the final game code and binaries. [GameLogic.ino](bonk-it-code/GameLogic.ino) is the main file run.\
+[timing_test](timing_test) code that was written to test timing aspects of the ATMEGA 328p\
 
